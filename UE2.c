@@ -1,8 +1,10 @@
 #include<string.h>
 #include<stdio.h>
 #include<stdlib.h>
-#include <sys/types.h> 
-#include <unistd.h> 
+#include<sys/types.h> 
+#include<sys/wait.h> 
+#include<unistd.h> 
+#include<signal.h>
 
 #define MAX_INPUT 255
 #define MAX_PATH 255
@@ -11,13 +13,21 @@
 void shell();
 char **split(char *str,char *delim);
 void end_14();
-int wo_14();
-int cd();
+void wo_14();
+void cd();
 void info_14();
+void setpath_14(char *path);
+void addtopath_14(const char *path);
 char *checkBackground(char *str);
+void sigint_handler(int signo);
 
 char **cmdv;
 int runBackground = 0;
+
+void sigint_handler(int signo) {
+	printf("\n");
+    exit(1);
+}
 
 //Startet die shell Funktion
 int main(){
@@ -32,7 +42,7 @@ void end_14(){
 }
 
 //PWD Funktion
-int wo_14(){	
+void wo_14(){	
 	char cwd[MAX_PATH];
 	//Abfragen des Current Working Dir mit getcwd
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {
@@ -42,12 +52,10 @@ int wo_14(){
 	else {
 		//Fehler sollte das CWD nicht abgefragt werden können
 		perror("Get current working dir error!\n");
-		return 1;
    }
-   return 0;
-	}
+}
 
-int cd(){
+void cd(){
 	char cwd[MAX_PATH];	
 	//Falls das 2 Element der angegebenen Parameter leer sein Fehlermeldung gültigen Pfad angeben
 	if (cmdv[1] != NULL){		
@@ -58,16 +66,31 @@ int cd(){
 		else {
 			//Fehler sollte das neue Working Directory nicht gewechselt werden können
 			perror("Couldn´t find folder!\n");
-			return 1;
 	   }
 	}
 	else
 		printf("Enter a valid path to switch!\n");
-	return 0;
 }
 
 void info_14(){
-	printf("\nSysteminfo:\n");	
+	//Liefert Systeminformationen
+	printf("\nSysteminfo:\n");
+	printf("UID: %d\n",getuid());
+	printf("EUID: %d\n",geteuid());
+	printf("PID: %d\n",getpid());
+	wo_14();
+	printf("PATH: %s\n",getenv("PATH"));
+}
+
+void setpath_14(char *path){
+
+}
+void addtopath_14(const char *path){
+	printf("%s\n",path);
+	char *newpath = strcat("PATH=$PATH:",path);
+	//printf("%s\n",newpath);
+	execvp("export",newpath);	
+	
 }
 	
 char **split(char *str,char *delim){
@@ -108,14 +131,22 @@ char *checkBackground(char *str){
 
 void shell(){
 	char eingabe[MAX_INPUT];
-	printf("Start my Shell\n");	
+	int stat_loc;
+	
+	printf("\nStart my Shell\n\n");	
+	
+	//signal(SIGINT, sigint_handler);
+	signal(SIGINT, SIG_IGN);
 	// PGRP & Signale bearbeiten
 	for(;;){
-		printf("14-Workingdirectory:>");
+		runBackground = 0;
+		printf("14-Workingdirectory:>");			
+		
 		fgets(eingabe,MAX_INPUT,stdin);
 		
-		//Entwertungen markieren
+		//Argumente zerlegen
 		cmdv = split(eingabe," \t\n");
+		
 		//Kontrolle ob Hintergrund prozess und entfernen des &
 		cmdv[0] = checkBackground(cmdv[0]);
 		
@@ -133,16 +164,12 @@ void shell(){
 		if(strcmp(cmdv[0],"info_14") == 0){
 			info_14();
 			continue;
-		}		
-		//Sonderzeichen suchen und cmdv verarbeiten
-		//festlegen ob Prozzess im Hintergrund laufen soll
-		
-		//
-		
-		//Befehle kontrollieren ob vorhanden und ausführen mit exec
-		
-		// sonst Fork aufruf
-		
+		}
+		if(strcmp(cmdv[0],"addtopath_14") == 0 && cmdv[1] != NULL){
+			addtopath_14(cmdv[1]);
+			continue;
+		}
+		//Start Childprocess
 		pid_t child;
 		switch(child=fork()){
 			case -1: perror("fork");
@@ -150,23 +177,29 @@ void shell(){
 			case 0: //Childprocess
 				//Kontrolle ob Hintergund oder nicht
 				//Signale für den ChildProcess richtigstellen
-				execvp(cmdv[0],cmdv);
-				perror(cmdv[0]);
+				signal(SIGINT, SIG_DFL);
+				if(execvp(cmdv[0],cmdv) < 0){
+					perror(cmdv[0]);				
+					printf("### Child ###\nCurrent PID: %d and Child PID: %d\n",
+               		getpid(), child);
+				}
 				
-				exit(1);
-				//break;
 			default: //Bin ich selber und ggfs warten auf beendigung des childprocess
-				
-				printf("LALA");
-				/*if(!(imHintergrund)){
-					//waitPID(...Tochter...);	
+				if(runBackground == 1){
+					waitpid(child, &stat_loc, WUNTRACED);
+					printf("### Parrent ###\nCurrent PID: %d and Child PID: %d\n",
+               		getpid(), child);
 				}
 				else{
+					printf("### Parrent ###\nCurrent PID: %d and Child PID: %d\n",
+               		getpid(), child);
 					continue;
 				}
-				break;*/
+				//continue;
+				waitpid(child, &stat_loc, WUNTRACED);
+				break;
 		}
-	free(cmdv);
+		free(cmdv);
 	}
 	//Return 0;
 }
