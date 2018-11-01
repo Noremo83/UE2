@@ -34,7 +34,6 @@ void sigint_handler(int signo) {
 }
 
 void printhelp(){
-	//Liefert eine Liste der verfügbaren Kommandos zurück
 	printf("\nBuild in Funktionen:\n\n    end_14 - Beendet die Shell\n    wo_14 - liefert das Working Directory\n    info_14 - liefert Systeminformationen\n");
 	printf("    getpath - liefert die PATH Variable\n    setpath_14 Pfad - überschreibt die PATH Variable mit dem gelieferten Pfad\n    addtopath_14 Pfad - fügt den angegeben Pfad der PATH Variable hinzu\n");
 }
@@ -60,9 +59,11 @@ char *wo_14(){
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {
 		//Ausgabe des Current Working Directory
     	return cwd;
+		//printf("%s\n", cwd);
 	} 
 	else {
 		//Fehler sollte das CWD nicht abgefragt werden können
+		//perror("Get current working dir error!\n");
 		return "ERROR get PATH";
    }
 }
@@ -95,23 +96,23 @@ void info_14(){
 }
 
 void setpath_14(const char *path){
-	//Einfach überschreiben der bestehenden PATH Variable mit setenv und ausgebe
 	setenv("PATH",path,1);  
 	printf("PATH=%s\n",getenv("PATH"));
 }
 
 void getpath(){
-	//Liefert die aktuelle PATH Variable zurück
 	printf("PATH: %s\n",getenv("PATH"));
 }
 
 void addtopath_14(const char *addpath){
-	//PATH Variable laden und einen : anhängen
+	//printf("ADDPATH %s\n",addpath);
 	char *path = getenv("PATH");
 	char *newpath = strcat(path,":");
-	//Speichern und ausgeben der neuen PATH Variable
+	//printf("\nPATH %s\n",newpath);
+	
 	setenv("PATH",strcat(newpath,addpath),1);   
-	printf("PATH %s\n",getenv("PATH"));	
+	printf("PATH %s\n",getenv("PATH"));
+	
 }
 	
 char **split(char *str,char *delim){
@@ -225,7 +226,10 @@ void shell(){
 					if(execvp(cmdv[0],cmdv) < 0){
 						perror(cmdv[0]);
 						exit(1);
-					}					
+					}
+					else{									
+						printf("CH1 Current PID: %d and Child PID: %d\n",getpid(), child);
+					}
 				}
 				else{
 					//Wenn kein Hintergrund dann Standardverhalten Signale
@@ -237,6 +241,10 @@ void shell(){
 						perror(cmdv[0]);
 						exit(1);
 					}
+					else{
+						printf("CH2 Current PID: %d and Child PID: %d\n",getpid(), child);
+					}
+						
 				}
 				
 			default: //Bin ich selber und ggfs warten auf beendigung des childprocess
@@ -245,6 +253,9 @@ void shell(){
 					signal(SIGCHLD,SIG_IGN);
 					signal(SIGINT, SIG_IGN);
 					signal(SIGQUIT, sigint_handler);
+					
+					printf("P1 Current PID: %d and Child PID: %d\n",getpid(), child);
+					//continue;
 				}
 				else{
 					//Wenn kein Hintergrund dann Standardverhalten Signale
@@ -255,10 +266,9 @@ void shell(){
 					//warten das Childprozess fertig wird
 					waitpid(child, &stat_loc, WUNTRACED);
 					printf("P2 Current PID: %d and Child PID: %d\n",getpid(), child);
+					//continue;
 				}
 		}
-		
-		//Speicher freigeben und runBackground wieder auf 0 setzen
 		free(cmdv);
 		runBackground = 0;
 	}
