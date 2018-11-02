@@ -158,6 +158,7 @@ void shell(){
 	
 	//signal(SIGINT, sigint_handler);
 	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
 	// PGRP & Signale bearbeiten
 	for(;;){
 		runBackground = 0;
