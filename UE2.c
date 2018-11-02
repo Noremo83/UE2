@@ -5,7 +5,6 @@
 #include<sys/wait.h> 
 #include<unistd.h> 
 #include<signal.h>
-//#include<env.h>
 
 #define MAX_INPUT 255
 #define MAX_PATH 255
@@ -156,14 +155,15 @@ void shell(){
 	
 	printf("\nStart my Shell\n\n");	
 	
-	//signal(SIGINT, sigint_handler);
+	//Signale ignorieren
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
-	// PGRP & Signale bearbeiten
+	
 	for(;;){
 		runBackground = 0;
 		printf("14-%s:>",wo_14());		
 		
+		//Einlesen des Userinputs
 		fgets(eingabe,MAX_INPUT,stdin);
 		
 		//Abfangen falls ein leerer Input erfolgt
