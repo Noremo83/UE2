@@ -178,34 +178,50 @@ void shell(){
 		
 		//Abfrage ob eine Build in Option benutzt werden soll und diese anschließend ausführen
 		if(strcmp(cmdv[0],"end_14") == 0){
+			free(cmdv);
+			runBackground = 0;
 			end_14();
 		}
 		else if(strcmp(cmdv[0],"wo_14") == 0){
 			wo_14();
+			free(cmdv);
+			runBackground = 0;
 			continue;
 		}		
 		else if(strcmp(cmdv[0],"cd") == 0){
 			cd();
+			free(cmdv);
+			runBackground = 0;
 			continue;
 		}		
 		else if(strcmp(cmdv[0],"info_14") == 0){
 			info_14();
+			free(cmdv);
+			runBackground = 0;
 			continue;
 		}
 		else if(strcmp(cmdv[0],"addtopath_14") == 0 && cmdv[1] != NULL){
 			addtopath_14(cmdv[1]);
+			free(cmdv);
+			runBackground = 0;
 			continue;
 		}
 		else if(strcmp(cmdv[0],"setpath_14") == 0 && cmdv[1] != NULL){
 			setpath_14(cmdv[1]);
+			free(cmdv);
+			runBackground = 0;
 			continue;
 		}
 		else if(strcmp(cmdv[0],"getpath") == 0){
 			getpath();
+			free(cmdv);
+			runBackground = 0;
 			continue;
 		}
 		else if (strcmp(cmdv[0],"help") == 0){
 			printhelp();
+			free(cmdv);
+			runBackground = 0;
 			continue;
 		}
 		
