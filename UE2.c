@@ -34,8 +34,8 @@ void sigint_handler(int signo) {
 
 void printhelp(){
 	//Liefert eine Liste der verfügbaren Kommandos zurück
-	printf("\nBuild in Funktionen:\n\n    end_14 - Beendet die Shell\n    wo_14 - liefert das Working Directory\n    info_14 - liefert Systeminformationen\n");
-	printf("    getpath - liefert die PATH Variable\n    setpath_14 Pfad - überschreibt die PATH Variable mit dem gelieferten Pfad\n    addtopath_14 Pfad - fügt den angegeben Pfad der PATH Variable hinzu\n");
+	printf("\nBuild in Funktionen:\n\n    14-ende - Beendet die Shell\n    14-wo - liefert das Working Directory\n    14-info - liefert Systeminformationen\n");
+	printf("    getpath - liefert die PATH Variable\n    14-setpath Pfad - überschreibt die PATH Variable mit dem gelieferten Pfad\n    14-addtopath Pfad - fügt den angegeben Pfad der PATH Variable hinzu\n");
 }
 
 
@@ -86,11 +86,11 @@ void cd(){
 void info_14(){
 	//Liefert Systeminformationen
 	printf("\nSysteminfo:\n");
-	printf("UID: %d\n",getuid());
-	printf("EUID: %d\n",geteuid());
-	printf("PID: %d\n",getpid());
-	printf("%s\n",wo_14());
-	printf("PATH: %s\n",getenv("PATH"));
+	printf("    UID: %d\n",getuid());
+	printf("    EUID: %d\n",geteuid());
+	printf("    PID: %d\n",getpid());
+	printf("    CWD: %s\n",wo_14());
+	printf("    PATH: %s\n\n",getenv("PATH"));
 }
 
 void setpath_14(const char *path){
@@ -177,13 +177,13 @@ void shell(){
 		cmdv[0] = checkBackground(cmdv[0]);		
 		
 		//Abfrage ob eine Build in Option benutzt werden soll und diese anschließend ausführen
-		if(strcmp(cmdv[0],"end_14") == 0){
+		if(strcmp(cmdv[0],"14-ende") == 0){
 			free(cmdv);
 			runBackground = 0;
 			end_14();
 		}
-		else if(strcmp(cmdv[0],"wo_14") == 0){
-			wo_14();
+		else if(strcmp(cmdv[0],"14-wo") == 0){
+			printf("CWD: %s\n",wo_14());
 			free(cmdv);
 			runBackground = 0;
 			continue;
@@ -194,19 +194,19 @@ void shell(){
 			runBackground = 0;
 			continue;
 		}		
-		else if(strcmp(cmdv[0],"info_14") == 0){
+		else if(strcmp(cmdv[0],"14-info") == 0){
 			info_14();
 			free(cmdv);
 			runBackground = 0;
 			continue;
 		}
-		else if(strcmp(cmdv[0],"addtopath_14") == 0 && cmdv[1] != NULL){
+		else if(strcmp(cmdv[0],"14-addtopath") == 0 && cmdv[1] != NULL){
 			addtopath_14(cmdv[1]);
 			free(cmdv);
 			runBackground = 0;
 			continue;
 		}
-		else if(strcmp(cmdv[0],"setpath_14") == 0 && cmdv[1] != NULL){
+		else if(strcmp(cmdv[0],"14-setpath") == 0 && cmdv[1] != NULL){
 			setpath_14(cmdv[1]);
 			free(cmdv);
 			runBackground = 0;
